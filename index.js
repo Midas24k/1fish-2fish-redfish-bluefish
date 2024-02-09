@@ -10,7 +10,7 @@ function init() {
                 type: 'list',
                 name: 'Menu',
                 message: 'What would you like to do?',
-                choices: ['View all Employees', 'View all Roles', 'View all Departments', 'Add a new Department', "Exit"]
+                choices: ['View all Employees', 'Add new Employees', 'View all Roles', 'View all Departments', 'Add a new Department', "Exit"]
 
             })
         .then((answer) => {
@@ -27,6 +27,9 @@ function init() {
                 case 'View all Employees':
                     executeEmployeesQuery();
                     break;
+                case 'Add new Employees':
+                    executeAddEmployeesQuery();
+                    break;    
                 case 'Exit':
                     executeExitquery();
                     break;
@@ -124,6 +127,60 @@ function executeEmployeesQuery() {
         console.log("Error: Database not initialized.");
     }
 }
+
+function executeAddEmployeesQuery() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'firstName',
+                message: 'Enter the first name of the new employee:'
+            },
+            {
+                type: 'input',
+                name: 'lastName',
+                message: 'Enter the last name of the new employee:'
+            },
+            {
+                type: 'input',
+                name: 'roleId',
+                message: 'Enter the role ID of the new employee:'
+            },
+            {
+                type: 'input',
+                name: 'managerId',
+                message: 'Enter the manager ID of the new employee (if applicable):'
+            }
+        ])
+        .then((answers) => {
+            if (db) {
+                // Execute the INSERT query to add the new employee
+                db.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answers.firstName, answers.lastName, answers.roleId, answers.managerId], function(error, results) {
+                    if (error) {
+                        console.log("Error adding new employee:", error);
+                    } else {
+                        console.log("New employee added successfully!");
+                        // Display the updated list of employees
+                        db.query("SELECT * FROM employees;", function(error, results) {
+                            if (error) {
+                                console.log("Error retrieving employee list:", error);
+                            } else {
+                                console.table(results);
+                                // Ask initial question again
+                                init();
+                            }
+                        });
+                    }
+                });
+            } else {
+                console.log("Error: Database not initialized.");
+            }
+        })
+        .catch((err) => {
+            console.log("Error:", err);
+        });
+}
+
 function executeExitquery() {
     process.exit();
 }
