@@ -242,9 +242,3 @@ init();
 
 
 
-//IF view employees, then run the function above
-//ELSE IF view departments ""
-// ELSE IF view roles ""
-// INSERT?
-// THEN re-ask initial question
-// type: 'list',
