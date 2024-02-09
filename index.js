@@ -10,7 +10,7 @@ function init() {
                 type: 'list',
                 name: 'Menu',
                 message: 'What would you like to do?',
-                choices: ['View all Employees', 'Add new Employees', 'View all Roles', 'View all Departments', 'Add a new Department', "Exit"]
+                choices: ['View all Employees', 'Add new Employees', 'View all Roles', 'Add a new Role', 'View all Departments', 'Add a new Department', "Exit"]
 
             })
         .then((answer) => {
@@ -23,6 +23,9 @@ function init() {
                     break;
                 case 'View all Roles':
                     executeRoleQuery();
+                    break;
+                case 'Add a new Role':
+                    executeAddRoleQuery();
                     break;
                 case 'View all Employees':
                     executeEmployeesQuery();
@@ -110,6 +113,53 @@ function executeRoleQuery() {
         console.log("Error: Database not initialized.");
     }
 }
+function executeAddRoleQuery() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: 'Enter the title of the new role:'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'Enter the salary of the new role:'
+            },
+            {
+                type: 'input',
+                name: 'departmentId',
+                message: 'Enter the department ID of the new role:'
+            }
+        ])
+        .then((answers) => {
+            if (db) {
+                // Execute the INSERT query to add the new role
+                db.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [answers.title, answers.salary, answers.departmentId], function(error, results) {
+                    if (error) {
+                        console.log("Error adding new role:", error);
+                    } else {
+                        console.log("New role added successfully!");
+                        // Display the updated list of roles
+                        db.query("SELECT * FROM role;", function(error, results) {
+                            if (error) {
+                                console.log("Error retrieving role list:", error);
+                            } else {
+                                console.table(results);
+                                // Ask initial question again
+                                init();
+                            }
+                        });
+                    }
+                });
+            } else {
+                console.log("Error: Database not initialized.");
+            }
+        })
+        .catch((err) => {
+            console.log("Error:", err);
+        });
+}
 
 function executeEmployeesQuery() {
 
@@ -186,12 +236,6 @@ function executeExitquery() {
 }
 
 
-
-
-
-
-
-
 // Call the init function to start the process
 init();
 
@@ -204,6 +248,3 @@ init();
 // INSERT?
 // THEN re-ask initial question
 // type: 'list',
-// name: 'menu',
-// message: 'Which query do you want to execute?',
-// choices: ['Query 1: Select * FROM department', 'Query 2: Select * FROM role', 'Query 3: Select * FROM employees']
